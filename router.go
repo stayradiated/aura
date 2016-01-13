@@ -10,7 +10,6 @@ func NewRouter(features Features) *mux.Router {
 	// load routes
 	for _, route := range GetRoutes(features) {
 		router.
-			StrictSlash(true).
 			Methods(route.Method).
 			Path(route.Pattern).
 			Name(route.Name).

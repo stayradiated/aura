@@ -3,13 +3,11 @@ package aura
 import (
 	"log"
 	"net/http"
-
-	"github.com/gorilla/mux"
 )
 
 type TracksInterface interface {
-	GetAllTracks(limit int, cont string) (TrackList, error)
-	GetTrackByID(trackID string) (Track, error)
+	FilterTracks(params map[string]string, include map[string]bool, limit int, cont string) (TrackList, *Included, error)
+	TrackWithID(trackID string, include map[string]bool) (Track, *Included, error)
 }
 
 type TracksFeature struct {
@@ -20,12 +18,12 @@ type TracksFeature struct {
 func (f *TracksFeature) Routes() Routes {
 	return Routes{
 		Route{
-			"AllTracks",
-			"GET", "/tracks", f.AllTracks,
+			"GetTracks",
+			"GET", "/tracks", f.getTracks,
 		},
 		Route{
-			"Track",
-			"GET", "/tracks/{trackID}", f.Track,
+			"GetTrackWithID",
+			"GET", "/tracks/{trackID}", f.getTrackWithID,
 		},
 		Route{
 			"TrackAudio",
@@ -42,30 +40,41 @@ func (f *TracksFeature) Routes() Routes {
 	}
 }
 
-type AllTracksResponse struct {
+type TracksResponse struct {
 	Tracks TrackList `json:"tracks"`
+	Links  *Included `json:"links,omitempty"`
 }
 
-func (f *TracksFeature) AllTracks(w http.ResponseWriter, r *http.Request) {
-	tracks, err := f.GetAllTracks(-1, "")
+func (f *TracksFeature) getTracks(w http.ResponseWriter, r *http.Request) {
+	params := f.getQueryParams(r)
+	include := f.getInclude(&params)
+	limit := f.getLimit(&params)
+
+	tracks, included, err := f.FilterTracks(params, include, limit, "")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	f.sendJSON(w, AllTracksResponse{
+	f.sendJSON(w, TracksResponse{
 		Tracks: tracks,
+		Links:  included,
 	})
 }
 
-func (f *TracksFeature) Track(w http.ResponseWriter, r *http.Request) {
-	trackID := mux.Vars(r)["trackID"]
+func (f *TracksFeature) getTrackWithID(w http.ResponseWriter, r *http.Request) {
+	trackID := f.getVar(r, "trackID")
+	params := f.getQueryParams(r)
+	include := f.getInclude(&params)
 
-	track, err := f.GetTrackByID(trackID)
+	track, included, err := f.TrackWithID(trackID, include)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	f.sendJSON(w, track)
+	f.sendJSON(w, TracksResponse{
+		Tracks: []Track{track},
+		Links:  included,
+	})
 }
 
 func (f *TracksFeature) TrackAudio(w http.ResponseWriter, r *http.Request) {

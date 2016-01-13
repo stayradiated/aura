@@ -8,8 +8,8 @@ import (
 )
 
 type ArtistsInterface interface {
-	GetAllArtists(limit int, cont string) ([]Artist, error)
-	GetArtistByID(artistID string) (Artist, error)
+	FilterArtists(params map[string]string, limit int, cont string) (ArtistList, error)
+	ArtistWithID(artistID string) (Artist, error)
 }
 
 type ArtistsFeature struct {
@@ -21,11 +21,11 @@ func (f *ArtistsFeature) Routes() Routes {
 	return Routes{
 		Route{
 			"AllArtists",
-			"GET", "/artists", f.AllArtists,
+			"GET", "/artists", f.getArtists,
 		},
 		Route{
 			"Artist",
-			"GET", "/artists/{artistID}", f.Artist,
+			"GET", "/artists/{artistID}", f.getArtistWithID,
 		},
 		Route{
 			"ArtistImages",
@@ -38,24 +38,34 @@ func (f *ArtistsFeature) Routes() Routes {
 	}
 }
 
-func (f *ArtistsFeature) AllArtists(w http.ResponseWriter, r *http.Request) {
-	artists, err := f.GetAllArtists(-1, "")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	f.sendJSON(w, artists)
+type ArtistsResponse struct {
+	Artists []Artist `json:"artists"`
 }
 
-func (f *ArtistsFeature) Artist(w http.ResponseWriter, r *http.Request) {
-	artistID := mux.Vars(r)["artistID"]
+func (f *ArtistsFeature) getArtists(w http.ResponseWriter, r *http.Request) {
+	params := f.getQueryParams(r)
 
-	artist, err := f.GetArtistByID(artistID)
+	artists, err := f.FilterArtists(params, -1, "")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	f.sendJSON(w, artist)
+	f.sendJSON(w, ArtistsResponse{
+		Artists: artists,
+	})
+}
+
+func (f *ArtistsFeature) getArtistWithID(w http.ResponseWriter, r *http.Request) {
+	artistID := mux.Vars(r)["artistID"]
+
+	artist, err := f.ArtistWithID(artistID)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	f.sendJSON(w, ArtistsResponse{
+		Artists: []Artist{artist},
+	})
 }
 
 func (f *ArtistsFeature) ArtistImages(w http.ResponseWriter, r *http.Request) {
