@@ -1,9 +1,9 @@
 package aura
 
-type Included struct {
-	Albums  AlbumList  `json:"albums,omitempty"`
-	Tracks  TrackList  `json:"tracks,omitempty"`
-	Artists ArtistList `json:"artists,omitempty"`
+type Links struct {
+	Albums  []string `json:"albums,omitempty"`
+	Tracks  []string `json:"tracks,omitempty"`
+	Artists []string `json:"artists,omitempty"`
 }
 
 type Track struct {
@@ -14,7 +14,7 @@ type Track struct {
 	Type   string    `json:"type"`   // The string 'track'
 
 	// Links
-	Links map[string][]string `json:"links"` // Link to other collections
+	Links Links `json:"links"` // Link to other collections
 
 	// OPTIONAL
 	Album         string    `json:"album,omitempty"`          // The name of the release the track appears on
@@ -44,6 +44,14 @@ type Track struct {
 
 type TrackList []Track
 
+func (t TrackList) IDs() []string {
+	IDs := make([]string, len(t))
+	for i, track := range t {
+		IDs[i] = track.ID
+	}
+	return IDs
+}
+
 type Album struct {
 	// REQUIRED
 	ID     string    `json:"id"`     // A unique identifier
@@ -52,7 +60,7 @@ type Album struct {
 	Type   string    `json:"type"`   // The string 'album'
 
 	// Links
-	Links map[string][]string `json:"links"` // Link to other collections
+	Links Links `json:"links"` // Link to other collections
 
 	// OPTIONAL
 	TrackTotal       int       `json:"tracktotal,omitempty"`         // The number of tracks on the album
@@ -66,6 +74,14 @@ type Album struct {
 }
 
 type AlbumList []Album
+
+func (a AlbumList) IDs() []string {
+	IDs := make([]string, len(a))
+	for i, album := range a {
+		IDs[i] = album.ID
+	}
+	return IDs
+}
 
 type Artist struct {
 	// REQUIRED

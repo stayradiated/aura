@@ -6,8 +6,8 @@ import (
 )
 
 type TracksInterface interface {
-	FilterTracks(params map[string]string, include map[string]bool, limit int, cont string) (TrackList, *Included, error)
-	TrackWithID(trackID string, include map[string]bool) (Track, *Included, error)
+	FilterTracks(params map[string]string, include Include, limit int, cont string) (Entities, error)
+	TrackWithID(trackID string, include Include) (Entities, error)
 }
 
 type TracksFeature struct {
@@ -40,24 +40,19 @@ func (f *TracksFeature) Routes() Routes {
 	}
 }
 
-type TracksResponse struct {
-	Tracks TrackList `json:"tracks"`
-	Links  *Included `json:"links,omitempty"`
-}
-
 func (f *TracksFeature) getTracks(w http.ResponseWriter, r *http.Request) {
 	params := f.getQueryParams(r)
 	include := f.getInclude(&params)
 	limit := f.getLimit(&params)
 
-	tracks, included, err := f.FilterTracks(params, include, limit, "")
+	entities, err := f.FilterTracks(params, include, limit, "")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	f.sendJSON(w, TracksResponse{
-		Tracks: tracks,
-		Links:  included,
+	f.sendJSON(w, Response{
+		Result:   entities.Tracks.IDs(),
+		Entities: entities.asMap(),
 	})
 }
 
@@ -66,14 +61,14 @@ func (f *TracksFeature) getTrackWithID(w http.ResponseWriter, r *http.Request) {
 	params := f.getQueryParams(r)
 	include := f.getInclude(&params)
 
-	track, included, err := f.TrackWithID(trackID, include)
+	entities, err := f.TrackWithID(trackID, include)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	f.sendJSON(w, TracksResponse{
-		Tracks: []Track{track},
-		Links:  included,
+	f.sendJSON(w, Response{
+		Result:   entities.Tracks.IDs(),
+		Entities: entities.asMap(),
 	})
 }
 

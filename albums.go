@@ -9,8 +9,8 @@ import (
 )
 
 type AlbumsInterface interface {
-	FilterAlbums(params map[string]string, include map[string]bool, limit int, cont string) (AlbumList, *Included, error)
-	AlbumWithID(albumID string, include map[string]bool) (Album, *Included, error)
+	FilterAlbums(params map[string]string, include Include, limit int, cont string) (Entities, error)
+	AlbumWithID(albumID string, include Include) (Entities, error)
 	AlbumImageWithID(albumID, imageID string, w io.Writer) error
 }
 
@@ -40,24 +40,19 @@ func (f *AlbumsFeature) Routes() Routes {
 	}
 }
 
-type AlbumsResponse struct {
-	Albums []Album   `json:"albums"`
-	Links  *Included `json:"links,omitempty"`
-}
-
 func (f *AlbumsFeature) getAlbums(w http.ResponseWriter, r *http.Request) {
 	params := f.getQueryParams(r)
 	include := f.getInclude(&params)
 	limit := f.getLimit(&params)
 
-	albums, included, err := f.FilterAlbums(params, include, limit, "")
+	entities, err := f.FilterAlbums(params, include, limit, "")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	f.sendJSON(w, AlbumsResponse{
-		Albums: albums,
-		Links:  included,
+	f.sendJSON(w, Response{
+		Result:   entities.Albums.IDs(),
+		Entities: entities.asMap(),
 	})
 }
 
@@ -66,14 +61,14 @@ func (f *AlbumsFeature) getAlbumWithID(w http.ResponseWriter, r *http.Request) {
 	params := f.getQueryParams(r)
 	include := f.getInclude(&params)
 
-	album, included, err := f.AlbumWithID(albumID, include)
+	entities, err := f.AlbumWithID(albumID, include)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	f.sendJSON(w, AlbumsResponse{
-		Albums: []Album{album},
-		Links:  included,
+	f.sendJSON(w, Response{
+		Result:   entities.Albums.IDs(),
+		Entities: entities.asMap(),
 	})
 }
 

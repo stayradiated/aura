@@ -26,11 +26,18 @@ func (f *Feature) getQueryParams(r *http.Request) map[string]string {
 }
 
 // get include from params
-func (f *Feature) getInclude(params *map[string]string) map[string]bool {
-	include := map[string]bool{}
+func (f *Feature) getInclude(params *map[string]string) Include {
+	include := Include{}
 	if pInclude, ok := (*params)["include"]; ok == true {
 		for _, key := range strings.Split(pInclude, ",") {
-			include[key] = true
+			switch key {
+			case "albums":
+				include.Albums = true
+			case "tracks":
+				include.Tracks = true
+			case "artists":
+				include.Artists = true
+			}
 		}
 		delete(*params, "include")
 	}
