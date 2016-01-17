@@ -8,8 +8,8 @@ import (
 )
 
 type ArtistsInterface interface {
-	FilterArtists(params map[string]string, limit int, cont string) (ArtistList, error)
-	ArtistWithID(artistID string) (Artist, error)
+	FilterArtists(params map[string]string, include Include, limit int, cont string) (Entities, error)
+	ArtistWithID(artistID string, include Include) (Entities, error)
 }
 
 type ArtistsFeature struct {
@@ -29,11 +29,11 @@ func (f *ArtistsFeature) Routes() Routes {
 		},
 		Route{
 			"ArtistImages",
-			"GET", "/artists/{artistID}/images", f.ArtistImages,
+			"GET", "/artists/{artistID}/images", f.getArtistImages,
 		},
 		Route{
 			"ArtistImage",
-			"GET", "/artists/{artistID}/images/{imageID}", f.ArtistImage,
+			"GET", "/artists/{artistID}/images/{imageID}", f.getArtistImage,
 		},
 	}
 }
@@ -44,32 +44,38 @@ type ArtistsResponse struct {
 
 func (f *ArtistsFeature) getArtists(w http.ResponseWriter, r *http.Request) {
 	params := f.getQueryParams(r)
+	include := f.getInclude(&params)
+	limit := f.getLimit(&params)
 
-	artists, err := f.FilterArtists(params, -1, "")
+	entities, err := f.FilterArtists(params, include, limit, "")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	f.sendJSON(w, ArtistsResponse{
-		Artists: artists,
+	f.sendJSON(w, Response{
+		Result:   entities.Artists.IDs(),
+		Entities: entities.asMap(),
 	})
 }
 
 func (f *ArtistsFeature) getArtistWithID(w http.ResponseWriter, r *http.Request) {
 	artistID := mux.Vars(r)["artistID"]
+	params := f.getQueryParams(r)
+	include := f.getInclude(&params)
 
-	artist, err := f.ArtistWithID(artistID)
+	entities, err := f.ArtistWithID(artistID, include)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	f.sendJSON(w, ArtistsResponse{
-		Artists: []Artist{artist},
+	f.sendJSON(w, Response{
+		Result:   entities.Artists.IDs(),
+		Entities: entities.asMap(),
 	})
 }
 
-func (f *ArtistsFeature) ArtistImages(w http.ResponseWriter, r *http.Request) {
+func (f *ArtistsFeature) getArtistImages(w http.ResponseWriter, r *http.Request) {
 }
 
-func (f *ArtistsFeature) ArtistImage(w http.ResponseWriter, r *http.Request) {
+func (f *ArtistsFeature) getArtistImage(w http.ResponseWriter, r *http.Request) {
 }

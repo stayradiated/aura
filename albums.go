@@ -4,8 +4,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-
-	"github.com/gorilla/mux"
 )
 
 type AlbumsInterface interface {
@@ -31,11 +29,11 @@ func (f *AlbumsFeature) Routes() Routes {
 		},
 		Route{
 			"AlbumImages",
-			"GET", "/albums/{albumID}/images", f.AlbumImages,
+			"GET", "/albums/{albumID}/images", f.getAlbumImage,
 		},
 		Route{
 			"AlbumImage",
-			"GET", "/albums/{albumID}/images/{imageID}", f.AlbumImage,
+			"GET", "/albums/{albumID}/images/{imageID}", f.getAlbumImage,
 		},
 	}
 }
@@ -57,7 +55,7 @@ func (f *AlbumsFeature) getAlbums(w http.ResponseWriter, r *http.Request) {
 }
 
 func (f *AlbumsFeature) getAlbumWithID(w http.ResponseWriter, r *http.Request) {
-	albumID := mux.Vars(r)["albumID"]
+	albumID := f.getVar(r, "albumID")
 	params := f.getQueryParams(r)
 	include := f.getInclude(&params)
 
@@ -72,11 +70,11 @@ func (f *AlbumsFeature) getAlbumWithID(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (f *AlbumsFeature) AlbumImages(w http.ResponseWriter, r *http.Request) {
+func (f *AlbumsFeature) getAlbumImages(w http.ResponseWriter, r *http.Request) {
 }
 
-func (f *AlbumsFeature) AlbumImage(w http.ResponseWriter, r *http.Request) {
-	albumID := mux.Vars(r)["albumID"]
-	imageID := mux.Vars(r)["imageID"]
+func (f *AlbumsFeature) getAlbumImage(w http.ResponseWriter, r *http.Request) {
+	albumID := f.getVar(r, "albumID")
+	imageID := f.getVar(r, "imageID")
 	f.AlbumImageWithID(albumID, imageID, w)
 }

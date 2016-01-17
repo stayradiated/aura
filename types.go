@@ -89,8 +89,19 @@ type Artist struct {
 	Name string `json:"name"` // The artist’s name
 	Type string `json:"type"` // The string 'artist'
 
+	// Links
+	Links Links `json:"links"` // Link to other collections
+
 	// OPTIONAL
 	ArtistMBID string `json:"artist_mbid,omitempty"` // A MusicBrainz artist id
 }
 
 type ArtistList []Artist
+
+func (a ArtistList) IDs() []string {
+	IDs := make([]string, len(a))
+	for i, artist := range a {
+		IDs[i] = artist.ID
+	}
+	return IDs
+}

@@ -1,6 +1,7 @@
 package aura
 
 import (
+	"io"
 	"log"
 	"net/http"
 )
@@ -8,6 +9,8 @@ import (
 type TracksInterface interface {
 	FilterTracks(params map[string]string, include Include, limit int, cont string) (Entities, error)
 	TrackWithID(trackID string, include Include) (Entities, error)
+	TrackAudio(trackID string, w http.ResponseWriter, r *http.Request) error
+	TrackImageWithID(trackID, imageID string, w io.Writer) error
 }
 
 type TracksFeature struct {
@@ -27,15 +30,15 @@ func (f *TracksFeature) Routes() Routes {
 		},
 		Route{
 			"TrackAudio",
-			"GET", "/tracks/{trackID}/audio", f.TrackAudio,
+			"GET", "/tracks/{trackID}/audio", f.getTrackAudio,
 		},
 		Route{
 			"TrackImages",
-			"GET", "/tracks/{trackID}/images", f.TrackImages,
+			"GET", "/tracks/{trackID}/images", f.getTrackImages,
 		},
 		Route{
 			"TrackImage",
-			"GET", "/tracks/{trackID}/images/{imageID}", f.TrackImage,
+			"GET", "/tracks/{trackID}/images/{imageID}", f.getTrackImage,
 		},
 	}
 }
@@ -72,11 +75,16 @@ func (f *TracksFeature) getTrackWithID(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (f *TracksFeature) TrackAudio(w http.ResponseWriter, r *http.Request) {
+func (f *TracksFeature) getTrackAudio(w http.ResponseWriter, r *http.Request) {
+	trackID := f.getVar(r, "trackID")
+	f.TrackAudio(trackID, w, r)
 }
 
-func (f *TracksFeature) TrackImages(w http.ResponseWriter, r *http.Request) {
+func (f *TracksFeature) getTrackImages(w http.ResponseWriter, r *http.Request) {
 }
 
-func (f *TracksFeature) TrackImage(w http.ResponseWriter, r *http.Request) {
+func (f *TracksFeature) getTrackImage(w http.ResponseWriter, r *http.Request) {
+	trackID := f.getVar(r, "trackID")
+	imageID := f.getVar(r, "imageID")
+	f.TrackImageWithID(trackID, imageID, w)
 }
