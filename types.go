@@ -40,6 +40,7 @@ type Track struct {
 	BitRate       int       `json:"bitrate,omitempty"`        // The number of bits per second in the encoding
 	BitDepth      int       `json:"bitdepth,omitempty"`       // The number of bits per sample
 	Size          int       `json:"size,omitempty"`           // The size of the audio file in bytes
+	Rating        int       `json:"rating,omitempty"`         // Track rating out of 100
 }
 
 type TrackList []Track
