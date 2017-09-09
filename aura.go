@@ -1,9 +1,10 @@
 package aura
 
 type Features struct {
-	Tracks  *TracksFeature
-	Albums  *AlbumsFeature
-	Artists *ArtistsFeature
+	Tracks    *TracksFeature
+	Albums    *AlbumsFeature
+	Artists   *ArtistsFeature
+	Playlists *PlaylistsFeature
 }
 
 type Include struct {
@@ -13,15 +14,17 @@ type Include struct {
 }
 
 type Entities struct {
-	Albums  AlbumList  `json:"albums,omitempty"`
-	Tracks  TrackList  `json:"tracks,omitempty"`
-	Artists ArtistList `json:"artists,omitempty"`
+	Albums    AlbumList    `json:"albums,omitempty"`
+	Tracks    TrackList    `json:"tracks,omitempty"`
+	Artists   ArtistList   `json:"artists,omitempty"`
+	Playlists PlaylistList `json:"playlists,omitempty"`
 }
 
 type EntitiesMap struct {
-	Albums  map[string]Album  `json:"albums,omitempty"`
-	Tracks  map[string]Track  `json:"tracks,omitempty"`
-	Artists map[string]Artist `json:"artists,omitempty"`
+	Albums    map[string]Album    `json:"albums,omitempty"`
+	Tracks    map[string]Track    `json:"tracks,omitempty"`
+	Artists   map[string]Artist   `json:"artists,omitempty"`
+	Playlists map[string]Playlist `json:"playlists,omitempty"`
 }
 
 func (e Entities) asMap() EntitiesMap {
@@ -42,6 +45,12 @@ func (e Entities) asMap() EntitiesMap {
 		result.Artists = make(map[string]Artist)
 		for _, artist := range e.Artists {
 			result.Artists[artist.ID] = artist
+		}
+	}
+	if e.Playlists != nil {
+		result.Playlists = make(map[string]Playlist)
+		for _, playlist := range e.Playlists {
+			result.Playlists[playlist.ID] = playlist
 		}
 	}
 	return result

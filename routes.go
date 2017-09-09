@@ -26,5 +26,9 @@ func GetRoutes(h Features) Routes {
 		routes = append(routes, h.Albums.Routes()...)
 	}
 
+	if h.Playlists != nil {
+		routes = append(routes, h.Playlists.Routes()...)
+	}
+
 	return routes
 }

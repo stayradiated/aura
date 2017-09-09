@@ -13,7 +13,7 @@ type Track struct {
 	Artist *[]string `json:"artist"` // The recording artists
 	Type   string    `json:"type"`   // The string 'track'
 
-	// Links
+	// LINKS
 	Links Links `json:"links"` // Link to other collections
 
 	// OPTIONAL
@@ -60,7 +60,7 @@ type Album struct {
 	Artist *[]string `json:"artist"` // The names of the artists responsible for the release
 	Type   string    `json:"type"`   // The string 'album'
 
-	// Links
+	// LINKS
 	Links Links `json:"links"` // Link to other collections
 
 	// OPTIONAL
@@ -90,7 +90,7 @@ type Artist struct {
 	Name string `json:"name"` // The artist’s name
 	Type string `json:"type"` // The string 'artist'
 
-	// Links
+	// LINKS
 	Links Links `json:"links"` // Link to other collections
 
 	// OPTIONAL
@@ -103,6 +103,30 @@ func (a ArtistList) IDs() []string {
 	IDs := make([]string, len(a))
 	for i, artist := range a {
 		IDs[i] = artist.ID
+	}
+	return IDs
+}
+
+type Playlist struct {
+	// REQUIRED
+	ID      string `json:"id"`      // A unique identifier
+	Title   string `json:"title"`   // The playlist’s name
+	Creator string `json:"creator"` // The name of the person who created the playlist
+	Type    string `json:"type"`    // The string 'playlist'
+
+	// LINKS
+	Links Links `json:"links"` // Link to other collections
+
+	// OPTIONAL
+	Description string `json:"description,omitempty"` // The playlist description
+}
+
+type PlaylistList []Playlist
+
+func (p PlaylistList) IDs() []string {
+	IDs := make([]string, len(p))
+	for i, playlist := range p {
+		IDs[i] = playlist.ID
 	}
 	return IDs
 }
